@@ -15,6 +15,9 @@ import { Badge } from '@/components/ui/badge'
 import { UserPlus, Mail, Lock, User, Gift } from 'lucide-react'
 import { validateEmail, validatePassword, validateNickname, validateReferralCode } from '@/utils/validation'
 import { ROUTES, POINTS } from '@/utils/constants'
+import { generateReferralCode } from '@/utils/format'
+import { supabase } from '@/lib/supabase'
+import { OAuthButtons } from '@/components/features/auth/OAuthButtons'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -72,12 +75,75 @@ export default function SignupPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Supabase 회원가입 로직 구현
-      console.log('Signup:', formData)
-      
-      // 임시: 2초 후 홈으로 이동
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      router.push(ROUTES.HOME)
+      let referrer:
+        | {
+            id: string
+            points: number
+          }
+        | null = null
+
+      if (formData.referralCode) {
+        const { data: refUser } = await (supabase.from('users') as any)
+          .select('id, points')
+          .eq('referral_code', formData.referralCode)
+          .maybeSingle()
+
+        if (!refUser) {
+          setErrors({ referralCode: '유효하지 않은 추천인 코드입니다.' })
+          return
+        }
+        referrer = refUser as { id: string; points: number }
+      }
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (authError) {
+        setErrors({ email: authError.message })
+        return
+      }
+
+      if (!authData.user) {
+        setErrors({ email: '회원가입 후 이메일 인증을 완료해주세요.' })
+        return
+      }
+
+      const signupPoints =
+        POINTS.SIGNUP_BONUS + (referrer ? POINTS.REFERRAL_BONUS : 0)
+
+      const profilePayload = {
+        id: authData.user.id,
+        email: formData.email,
+        nickname: formData.nickname,
+        avatar_url: null,
+        points: signupPoints,
+        referral_code: generateReferralCode(),
+        referred_by: formData.referralCode || null,
+        tier: 'BRONZE',
+        total_sales: 0,
+        total_purchases: 0,
+      }
+      const { error: profileError } = await (supabase.from('users') as any).upsert(
+        profilePayload
+      )
+
+      if (profileError) {
+        setErrors({ email: '회원 프로필 생성에 실패했습니다. 다시 시도해주세요.' })
+        return
+      }
+
+      if (referrer) {
+        await (supabase.from('users') as any)
+          .update({
+            points: referrer.points + POINTS.REFERRAL_BONUS,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', referrer.id)
+      }
+
+      router.replace(ROUTES.HOME)
+      router.refresh()
     } catch (error) {
       console.error('Signup error:', error)
       setErrors({ email: '회원가입에 실패했습니다. 다시 시도해주세요.' })
@@ -264,6 +330,8 @@ export default function SignupPage() {
             </Link>
             에 동의하는 것으로 간주됩니다.
           </p>
+
+          <OAuthButtons mode="signup" />
         </CardFooter>
       </form>
     </Card>
