@@ -162,8 +162,9 @@ export const VALIDATION = {
 
 export const ROUTES = {
   HOME: '/',
-  LOGIN: '/auth/login',
-  SIGNUP: '/auth/signup',
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+  AUTH_CALLBACK: '/auth/callback',
   PROFILE: '/profile',
   PROMPTS: '/prompts',
   PROMPT_DETAIL: (id: string) => `/prompts/${id}`,

@@ -7,19 +7,22 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { LogIn, Mail, Lock } from 'lucide-react'
 import { validateEmail, validatePassword } from '@/utils/validation'
 import { ROUTES } from '@/utils/constants'
+import { supabase } from '@/lib/supabase'
+import { OAuthButtons } from '@/components/features/auth/OAuthButtons'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,15 +44,21 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // TODO: Supabase 로그인 로직 구현
-      console.log('Login:', { email, password })
-      
-      // 임시: 2초 후 홈으로 이동
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      router.push(ROUTES.HOME)
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) {
+        setErrors({ form: '이메일 또는 비밀번호를 확인해주세요.' })
+        return
+      }
+
+      const redirectTo = searchParams.get('redirect') || ROUTES.HOME
+      router.replace(redirectTo)
+      router.refresh()
     } catch (error) {
       console.error('Login error:', error)
-      setErrors({ email: '로그인에 실패했습니다. 다시 시도해주세요.' })
+      setErrors({ form: '로그인에 실패했습니다. 다시 시도해주세요.' })
     } finally {
       setIsLoading(false)
     }
@@ -71,6 +80,10 @@ export default function LoginPage() {
 
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          {errors.form && (
+            <p className="text-sm text-red-600">{errors.form}</p>
+          )}
+
           {/* 이메일 입력 */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium text-gray-700">
@@ -141,6 +154,8 @@ export default function LoginPage() {
               회원가입
             </Link>
           </div>
+
+          <OAuthButtons mode="login" />
         </CardFooter>
       </form>
     </Card>

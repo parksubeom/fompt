@@ -53,7 +53,7 @@ export async function updateSession(request: NextRequest) {
   if (isProtectedRoute && !user) {
     // 로그인 안 된 상태로 보호된 라우트 접근 시 로그인 페이지로 리다이렉트
     const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/auth/login'
+    redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
   }

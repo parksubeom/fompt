@@ -10,18 +10,25 @@ export interface Database {
         Row: User
         Insert: UserInsert
         Update: UserUpdate
+        Relationships: []
       }
       prompts: {
         Row: Prompt
         Insert: PromptInsert
         Update: PromptUpdate
+        Relationships: []
       }
       purchases: {
         Row: Purchase
         Insert: PurchaseInsert
         Update: PurchaseUpdate
+        Relationships: []
       }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }
 

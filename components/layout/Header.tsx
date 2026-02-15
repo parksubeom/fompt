@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { LogIn, User, Settings, LogOut, ShoppingBag, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,14 +23,21 @@ import { ROUTES } from '@/utils/constants'
 import { formatPoints } from '@/utils/format'
 import { TIERS } from '@/utils/constants'
 import type { User as UserType } from '@/types/database'
+import { supabase } from '@/lib/supabase'
 
 interface HeaderProps {
   user: UserType | null
-  onLogout?: () => void
 }
 
-export function Header({ user, onLogout }: HeaderProps) {
+export function Header({ user }: HeaderProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.replace(ROUTES.HOME)
+    router.refresh()
+  }
 
   // 로고 그라데이션 스타일
   const logoGradient =
@@ -169,7 +176,7 @@ export function Header({ user, onLogout }: HeaderProps) {
                   <DropdownMenuSeparator />
 
                   <DropdownMenuItem
-                    onClick={onLogout}
+                    onClick={handleLogout}
                     className="text-red-600 focus:text-red-600 cursor-pointer"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
