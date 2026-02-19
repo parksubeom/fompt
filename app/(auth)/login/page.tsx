@@ -1,11 +1,6 @@
 'use client'
 
-/**
- * Login Page
- * 로그인 폼
- */
-
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -17,7 +12,12 @@ import { ROUTES } from '@/utils/constants'
 import { supabase } from '@/lib/supabase'
 import { OAuthButtons } from '@/components/features/auth/OAuthButtons'
 
-export default function LoginPage() {
+const OAUTH_ERROR_MAP: Record<string, string> = {
+  'oauth-code-missing': '소셜 로그인 인증 코드를 받지 못했습니다. 다시 시도해주세요.',
+  'oauth-exchange-failed': '소셜 로그인 세션 교환에 실패했습니다. 다시 시도해주세요.',
+}
+
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
@@ -25,10 +25,12 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string; form?: string }>({})
   const [isLoading, setIsLoading] = useState(false)
 
+  const oauthError = searchParams.get('error')
+  const oauthErrorMessage = oauthError ? OAUTH_ERROR_MAP[oauthError] : null
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // 유효성 검증
     const emailValidation = validateEmail(email)
     const passwordValidation = validatePassword(password)
 
@@ -78,13 +80,28 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+      <CardContent className="space-y-4">
+        {oauthErrorMessage && (
+          <p className="text-sm text-red-600 bg-red-50 rounded-md p-3">{oauthErrorMessage}</p>
+        )}
+
+        <OAuthButtons />
+
+        {/* 구분선 */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">또는 이메일로 로그인</span>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           {errors.form && (
             <p className="text-sm text-red-600">{errors.form}</p>
           )}
 
-          {/* 이메일 입력 */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium text-gray-700">
               이메일
@@ -106,7 +123,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* 비밀번호 입력 */}
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium text-gray-700">
               비밀번호
@@ -128,7 +144,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* 비밀번호 찾기 (추후 구현) */}
           <div className="flex justify-end">
             <Link
               href="/auth/reset-password"
@@ -137,27 +152,31 @@ export default function LoginPage() {
               비밀번호를 잊으셨나요?
             </Link>
           </div>
-        </CardContent>
 
-        <CardFooter className="flex flex-col space-y-4">
           <Button
             type="submit"
             className="w-full bg-gradient-to-r from-[#8B5CF6] to-[#06B6D4] text-white hover:opacity-90"
             disabled={isLoading}
           >
-            {isLoading ? '로그인 중...' : '로그인'}
+            {isLoading ? '로그인 중...' : '이메일로 로그인'}
           </Button>
+        </form>
 
-          <div className="text-center text-sm text-gray-600">
-            아직 계정이 없으신가요?{' '}
-            <Link href={ROUTES.SIGNUP} className="text-primary font-medium hover:underline">
-              회원가입
-            </Link>
-          </div>
-
-          <OAuthButtons mode="login" />
-        </CardFooter>
-      </form>
+        <div className="text-center text-sm text-gray-600">
+          아직 계정이 없으신가요?{' '}
+          <Link href={ROUTES.SIGNUP} className="text-primary font-medium hover:underline">
+            회원가입
+          </Link>
+        </div>
+      </CardContent>
     </Card>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }

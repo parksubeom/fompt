@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
+import { AuthProvider } from "@/components/providers/AuthProvider"
 import { createSupabaseServerClient } from "@/lib/supabase-server"
 import type { User as AppUser } from "@/types/database"
 
@@ -34,9 +35,11 @@ export default async function RootLayout({
   return (
     <html lang="ko">
       <body className="flex min-h-screen flex-col">
-        <Header user={user} />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AuthProvider serverUser={user}>
+          <Header user={user} />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
   )
