@@ -33,6 +33,16 @@
 ### SQL 마이그레이션
 - `supabase/migrations/001_initial_schema.sql`에 3개 테이블(users, prompts, purchases), 인덱스, RLS 정책, updated_at 트리거를 모두 포함
 
+### PKCE Flow 전환
+- 기존 implicit flow는 인증 후 토큰이 URL 해시(`#access_token=...`)에 노출되는 문제 발생
+- `lib/supabase.ts`에 `flowType: 'pkce'` 옵션 추가
+- PKCE 적용 후 OAuth 인증 코드가 `/auth/callback?code=...`로 전달되어 서버에서 안전하게 세션 교환
+
+### Vercel 배포
+- GitHub 연동으로 `https://fompt.vercel.app` 배포 완료
+- 환경변수(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) Vercel 대시보드에서 설정
+- Supabase URL Configuration에 배포 URL 등록 (`Site URL`, `Redirect URLs`)
+
 ## 3. 구현 상세 (Implementation Details)
 
 ### 변경 파일
@@ -46,20 +56,24 @@
 | `components/providers/AuthProvider.tsx` | 서버 user 초기값 세팅 + `onAuthStateChange` 리스너 |
 | `app/layout.tsx` | `AuthProvider`로 앱 래핑 |
 | `supabase/migrations/001_initial_schema.sql` | 전체 DB 스키마 (테이블, 인덱스, RLS, 트리거) |
+| `lib/supabase.ts` | `flowType: 'pkce'` 추가로 implicit → PKCE flow 전환 |
 
 ## 4. 명령어 (Commands)
 ```bash
 npm run build
+git push origin main   # Vercel 자동 배포 트리거
 ```
 
 ## 5. 결과 (Result)
 - 빌드 성공 (exit 0, 타입 에러 없음)
-- 소셜 로그인 → 콜백 → 프로필 자동 생성까지 전체 플로우 코드 완성
+- Vercel 배포 완료: `https://fompt.vercel.app`
+- 소셜 로그인 → PKCE 콜백 → 프로필 자동 생성까지 전체 플로우 코드 완성
 - DB 스키마 SQL 제공으로 Supabase 대시보드에서 즉시 테이블 생성 가능
 - 클라이언트 측 인증 상태가 Zustand로 관리되어 탭 간 세션 동기화 대응
 
-## 6. 사용자 액션 필요 사항
-1. **Supabase SQL Editor**에서 `supabase/migrations/001_initial_schema.sql` 실행
-2. **Supabase Auth > Providers**에서 Google/Kakao 활성화 및 Client ID/Secret 입력
-3. **Google Cloud Console** OAuth 동의화면 + 리다이렉트 URI 설정
-4. **Kakao Developers** 앱 생성 + 리다이렉트 URI 설정
+## 6. 외부 설정 사항
+1. **Supabase SQL Editor**에서 `supabase/migrations/001_initial_schema.sql` 실행 ✅
+2. **Supabase Auth > URL Configuration**: Site URL을 `https://fompt.vercel.app`, Redirect URLs에 `https://fompt.vercel.app/**` 추가
+3. **Supabase Auth > Providers**에서 Google/Kakao 활성화 및 Client ID/Secret 입력
+4. **Google Cloud Console** OAuth 동의화면 + 리다이렉트 URI: `https://jvdgsjbvhmzqzmrxlekd.supabase.co/auth/v1/callback`
+5. **Kakao Developers** 앱 생성 + 리다이렉트 URI: `https://jvdgsjbvhmzqzmrxlekd.supabase.co/auth/v1/callback`
