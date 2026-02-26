@@ -139,3 +139,96 @@ export function validatePromptPrice(price: number): ValidationResult {
 
   return { isValid: true }
 }
+
+/**
+ * 프롬프트 설명 검증
+ */
+export function validatePromptDescription(description: string): ValidationResult {
+  if (!description) {
+    return { isValid: false, error: '설명을 입력해주세요.' }
+  }
+
+  const { MIN, MAX } = VALIDATION.PROMPT.DESCRIPTION
+  if (description.length < MIN) {
+    return { isValid: false, error: `설명은 최소 ${MIN}자 이상이어야 합니다.` }
+  }
+
+  if (description.length > MAX) {
+    return { isValid: false, error: `설명은 최대 ${MAX}자까지 가능합니다.` }
+  }
+
+  return { isValid: true }
+}
+
+/**
+ * 프롬프트 본문(콘텐츠) 검증
+ */
+export function validatePromptContent(content: string): ValidationResult {
+  if (!content) {
+    return { isValid: false, error: '프롬프트 본문을 입력해주세요.' }
+  }
+
+  const { MIN, MAX } = VALIDATION.PROMPT.CONTENT
+  if (content.length < MIN) {
+    return { isValid: false, error: `본문은 최소 ${MIN}자 이상이어야 합니다.` }
+  }
+
+  if (content.length > MAX) {
+    return { isValid: false, error: `본문은 최대 ${MAX}자까지 가능합니다.` }
+  }
+
+  return { isValid: true }
+}
+
+/**
+ * 프롬프트 미리보기 검증
+ */
+export function validatePromptPreview(preview: string): ValidationResult {
+  if (!preview) {
+    return { isValid: false, error: '미리보기를 입력해주세요.' }
+  }
+
+  const { MIN, MAX } = VALIDATION.PROMPT.PREVIEW
+  if (preview.length < MIN) {
+    return { isValid: false, error: `미리보기는 최소 ${MIN}자 이상이어야 합니다.` }
+  }
+
+  if (preview.length > MAX) {
+    return { isValid: false, error: `미리보기는 최대 ${MAX}자까지 가능합니다.` }
+  }
+
+  return { isValid: true }
+}
+
+/**
+ * 프롬프트 폼 전체 검증
+ */
+export function validatePromptForm(data: {
+  title: string
+  description: string
+  content: string
+  preview: string
+  category: string
+  price: number
+}): Record<string, string> {
+  const errors: Record<string, string> = {}
+
+  const titleResult = validatePromptTitle(data.title)
+  if (!titleResult.isValid) errors.title = titleResult.error!
+
+  const descResult = validatePromptDescription(data.description)
+  if (!descResult.isValid) errors.description = descResult.error!
+
+  const contentResult = validatePromptContent(data.content)
+  if (!contentResult.isValid) errors.content = contentResult.error!
+
+  const previewResult = validatePromptPreview(data.preview)
+  if (!previewResult.isValid) errors.preview = previewResult.error!
+
+  if (!data.category) errors.category = '카테고리를 선택해주세요.'
+
+  const priceResult = validatePromptPrice(data.price)
+  if (!priceResult.isValid) errors.price = priceResult.error!
+
+  return errors
+}
