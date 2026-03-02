@@ -12,6 +12,8 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
+  Pencil,
+  Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -41,6 +43,8 @@ export default function PromptDetailPage() {
   const [isPurchased, setIsPurchased] = useState(false)
   const [isPurchasing, setIsPurchasing] = useState(false)
   const [purchaseError, setPurchaseError] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const isOwner = user?.id === prompt?.seller_id
 
@@ -130,6 +134,27 @@ export default function PromptDetailPage() {
       setPurchaseError('예상치 못한 오류가 발생했습니다.')
     } finally {
       setIsPurchasing(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!prompt) return
+    setIsDeleting(true)
+    try {
+      const { error } = await (supabase.from('prompts') as any)
+        .update({ status: 'DELETED' })
+        .eq('id', prompt.id)
+
+      if (error) {
+        console.error('Delete error:', error)
+        return
+      }
+      router.push(ROUTES.PROMPTS)
+      router.refresh()
+    } catch {
+      console.error('Unexpected delete error')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -336,10 +361,52 @@ export default function PromptDetailPage() {
               )}
 
               {isOwner && (
-                <div className="flex items-center justify-center gap-2 text-primary bg-violet-50 rounded-lg p-3">
-                  <span className="text-sm font-medium">
-                    내가 등록한 프롬프트
-                  </span>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    asChild
+                  >
+                    <Link href={`/prompts/${prompt.id}/edit`}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      수정하기
+                    </Link>
+                  </Button>
+
+                  {!showDeleteConfirm ? (
+                    <Button
+                      variant="ghost"
+                      className="w-full text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      삭제하기
+                    </Button>
+                  ) : (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 space-y-2">
+                      <p className="text-xs text-red-600 text-center">정말 삭제하시겠습니까?</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => setShowDeleteConfirm(false)}
+                          disabled={isDeleting}
+                        >
+                          취소
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="flex-1"
+                          onClick={handleDelete}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? '삭제 중...' : '확인'}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

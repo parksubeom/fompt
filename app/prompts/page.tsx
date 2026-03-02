@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Search, SlidersHorizontal, Sparkles } from 'lucide-react'
+import { Suspense, useEffect, useState, useCallback, useRef } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Search, SlidersHorizontal, Sparkles, Tag } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,16 +29,55 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 const PAGE_SIZE = 12
 
-export default function PromptsPage() {
+function useDebounce<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+  return debounced
+}
+
+function PromptsContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const initialCategory = (searchParams.get('category') as PromptCategory | 'ALL') || 'ALL'
+  const initialSort = (searchParams.get('sort') as SortOption) || 'latest'
+  const initialSearch = searchParams.get('q') || ''
+  const initialTag = searchParams.get('tag') || ''
+
   const [prompts, setPrompts] = useState<PromptWithSeller[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [category, setCategory] = useState<PromptCategory | 'ALL'>('ALL')
-  const [sortBy, setSortBy] = useState<SortOption>('latest')
-  const [search, setSearch] = useState('')
-  const [searchInput, setSearchInput] = useState('')
+  const [category, setCategory] = useState<PromptCategory | 'ALL'>(initialCategory)
+  const [sortBy, setSortBy] = useState<SortOption>(initialSort)
+  const [searchInput, setSearchInput] = useState(initialSearch)
+  const [tagFilter, setTagFilter] = useState(initialTag)
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+
+  const debouncedSearch = useDebounce(searchInput, 400)
+  const isFirstRender = useRef(true)
+
+  const updateURL = useCallback(
+    (params: { q?: string; category?: string; sort?: string; tag?: string }) => {
+      const url = new URLSearchParams()
+      const q = params.q ?? debouncedSearch
+      const cat = params.category ?? category
+      const sort = params.sort ?? sortBy
+      const tag = params.tag ?? tagFilter
+
+      if (q) url.set('q', q)
+      if (cat !== 'ALL') url.set('category', cat)
+      if (sort !== 'latest') url.set('sort', sort)
+      if (tag) url.set('tag', tag)
+
+      const qs = url.toString()
+      router.replace(`/prompts${qs ? `?${qs}` : ''}`, { scroll: false })
+    },
+    [router, debouncedSearch, category, sortBy, tagFilter]
+  )
 
   const fetchPrompts = useCallback(
     async (pageNum: number, reset: boolean = false) => {
@@ -54,10 +94,14 @@ export default function PromptsPage() {
           query = query.eq('category', category)
         }
 
-        if (search) {
+        if (debouncedSearch) {
           query = query.or(
-            `title.ilike.%${search}%,description.ilike.%${search}%`
+            `title.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%`
           )
+        }
+
+        if (tagFilter) {
+          query = query.contains('tags', [tagFilter.toLowerCase()])
         }
 
         switch (sortBy) {
@@ -102,23 +146,23 @@ export default function PromptsPage() {
         setIsLoading(false)
       }
     },
-    [category, sortBy, search]
+    [category, sortBy, debouncedSearch, tagFilter]
   )
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+    } else {
+      updateURL({})
+    }
     setPage(0)
     fetchPrompts(0, true)
-  }, [fetchPrompts])
+  }, [fetchPrompts]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLoadMore = () => {
     const nextPage = page + 1
     setPage(nextPage)
     fetchPrompts(nextPage, false)
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSearch(searchInput)
   }
 
   const handleCategoryChange = (value: string) => {
@@ -128,12 +172,17 @@ export default function PromptsPage() {
   const handleClearFilters = () => {
     setCategory('ALL')
     setSortBy('latest')
-    setSearch('')
     setSearchInput('')
+    setTagFilter('')
+    router.replace('/prompts', { scroll: false })
+  }
+
+  const handleTagClick = (tag: string) => {
+    setTagFilter(tag.toLowerCase())
   }
 
   const hasActiveFilters =
-    category !== 'ALL' || sortBy !== 'latest' || search !== ''
+    category !== 'ALL' || sortBy !== 'latest' || debouncedSearch !== '' || tagFilter !== ''
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -156,21 +205,27 @@ export default function PromptsPage() {
 
       {/* 필터 영역 */}
       <div className="mb-6 space-y-4">
-        {/* 검색 */}
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="프롬프트 검색..."
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Button type="submit" variant="outline">
-            검색
-          </Button>
-        </form>
+        {/* 검색 - 디바운스 적용 (입력 즉시 반영) */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="프롬프트 제목, 설명 검색..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        {/* 태그 검색 */}
+        <div className="relative">
+          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="태그로 검색 (예: React, 블로그, 마케팅)"
+            value={tagFilter}
+            onChange={(e) => setTagFilter(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
         {/* 카테고리 & 정렬 */}
         <div className="flex flex-wrap items-center gap-3">
@@ -220,21 +275,36 @@ export default function PromptsPage() {
         </div>
 
         {/* 활성 필터 표시 */}
-        {search && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">검색:</span>
-            <Badge variant="secondary" className="flex items-center gap-1">
-              &ldquo;{search}&rdquo;
-              <button
-                onClick={() => {
-                  setSearch('')
-                  setSearchInput('')
-                }}
-                className="ml-1 hover:text-red-500"
-              >
-                &times;
-              </button>
-            </Badge>
+        {(debouncedSearch || tagFilter) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {debouncedSearch && (
+              <>
+                <span className="text-sm text-gray-500">검색:</span>
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  &ldquo;{debouncedSearch}&rdquo;
+                  <button
+                    onClick={() => setSearchInput('')}
+                    className="ml-1 hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+                </Badge>
+              </>
+            )}
+            {tagFilter && (
+              <>
+                <span className="text-sm text-gray-500">태그:</span>
+                <Badge variant="outline" className="flex items-center gap-1 text-primary">
+                  #{tagFilter}
+                  <button
+                    onClick={() => setTagFilter('')}
+                    className="ml-1 hover:text-red-500"
+                  >
+                    &times;
+                  </button>
+                </Badge>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -267,11 +337,10 @@ export default function PromptsPage() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {prompts.map((prompt) => (
-              <PromptCard key={prompt.id} prompt={prompt} />
+              <PromptCard key={prompt.id} prompt={prompt} onTagClick={handleTagClick} />
             ))}
           </div>
 
-          {/* 더 보기 */}
           {hasMore && (
             <div className="flex justify-center mt-10">
               <Button
@@ -287,5 +356,13 @@ export default function PromptsPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function PromptsPage() {
+  return (
+    <Suspense>
+      <PromptsContent />
+    </Suspense>
   )
 }

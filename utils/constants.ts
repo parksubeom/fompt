@@ -168,6 +168,7 @@ export const ROUTES = {
   PROFILE: '/profile',
   PROMPTS: '/prompts',
   PROMPT_DETAIL: (id: string) => `/prompts/${id}`,
+  PROMPT_EDIT: (id: string) => `/prompts/${id}/edit`,
   PROMPT_CREATE: '/prompts/create',
   PURCHASES: '/purchases',
   SETTINGS: '/settings',
