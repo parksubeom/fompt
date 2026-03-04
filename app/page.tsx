@@ -463,7 +463,7 @@ export default function Home() {
                     size="lg"
                     variant="outline"
                     asChild
-                    className="border-white/30 text-white hover:bg-white/10"
+                    className="bg-transparent border-white/50 text-white hover:bg-white/10"
                   >
                     <Link href={ROUTES.PROMPTS}>
                       마켓 둘러보기
