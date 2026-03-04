@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { StarRating } from '@/components/features/review/StarRating'
 import { ReviewSection } from '@/components/features/review/ReviewSection'
 import { CATEGORIES, TIERS, ROUTES } from '@/utils/constants'
@@ -31,6 +32,7 @@ import {
 } from '@/utils/format'
 import { useAuthStore } from '@/store/auth'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import type { PromptWithSeller } from '@/types/database'
 
 type PageState = 'loading' | 'ready' | 'not_found' | 'error'
@@ -140,11 +142,13 @@ export default function PromptDetailPage() {
           return
         }
         setPurchaseError('구매에 실패했습니다. 다시 시도해주세요.')
+        toast.error('구매에 실패했습니다.')
         console.error('Purchase error:', error)
         return
       }
 
       setIsPurchased(true)
+      toast.success('프롬프트를 성공적으로 구매했습니다!')
       router.refresh()
     } catch {
       setPurchaseError('예상치 못한 오류가 발생했습니다.')
@@ -163,8 +167,10 @@ export default function PromptDetailPage() {
 
       if (error) {
         console.error('Delete error:', error)
+        toast.error('삭제에 실패했습니다.')
         return
       }
+      toast.success('프롬프트가 삭제되었습니다.')
       router.push(ROUTES.PROMPTS)
       router.refresh()
     } catch {
@@ -184,13 +190,15 @@ export default function PromptDetailPage() {
           .eq('user_id', user.id)
           .eq('prompt_id', prompt.id)
         setIsBookmarked(false)
+        toast.success('즐겨찾기에서 제거했습니다.')
       } else {
         await (supabase.from('bookmarks') as any)
           .insert({ user_id: user.id, prompt_id: prompt.id })
         setIsBookmarked(true)
+        toast.success('즐겨찾기에 추가했습니다.')
       }
     } catch {
-      console.error('Bookmark toggle failed')
+      toast.error('즐겨찾기 처리에 실패했습니다.')
     } finally {
       setBookmarkLoading(false)
     }
@@ -204,8 +212,51 @@ export default function PromptDetailPage() {
 
   if (pageState === 'loading') {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="container mx-auto max-w-4xl px-4 py-8">
+        <Skeleton className="h-4 w-20 mb-6" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <div className="flex gap-2 mb-3">
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </div>
+              <Skeleton className="h-8 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3 mt-1" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-16 mb-2" />
+              <Skeleton className="h-32 w-full rounded-lg" />
+            </div>
+            <div>
+              <Skeleton className="h-4 w-20 mb-2" />
+              <Skeleton className="h-40 w-full rounded-lg" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <div className="text-center space-y-2">
+                  <Skeleton className="h-4 w-10 mx-auto" />
+                  <Skeleton className="h-9 w-24 mx-auto" />
+                </div>
+                <Skeleton className="h-10 w-full rounded-lg" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-5">
+                <Skeleton className="h-4 w-12 mb-3" />
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     )
   }

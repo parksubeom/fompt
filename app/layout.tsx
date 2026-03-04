@@ -3,6 +3,7 @@ import "./globals.css"
 import { Header } from "@/components/layout/Header"
 import { Footer } from "@/components/layout/Footer"
 import { AuthProvider } from "@/components/providers/AuthProvider"
+import { ToastProvider } from "@/components/providers/ToastProvider"
 import { createSupabaseServerClient } from "@/lib/supabase-server"
 import type { User as AppUser } from "@/types/database"
 
@@ -60,6 +61,7 @@ export default async function RootLayout({
           <Header user={user} />
           <main className="flex-1">{children}</main>
           <Footer />
+          <ToastProvider />
         </AuthProvider>
       </body>
     </html>

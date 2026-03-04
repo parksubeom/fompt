@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuthStore } from '@/store/auth'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import { TIERS, ROUTES } from '@/utils/constants'
 import { validateNickname } from '@/utils/validation'
 import { formatRelativeTime } from '@/utils/format'
@@ -132,11 +133,13 @@ export default function SettingsPage() {
       setUser({ ...user, nickname: trimmedNickname, avatar_url: avatarUrl.trim() || null })
       setProfileSaveStatus('success')
       setProfileSaveMessage('프로필이 업데이트되었습니다.')
+      toast.success('프로필이 업데이트되었습니다.')
       setTimeout(() => setProfileSaveStatus('idle'), 3000)
     } catch (err) {
       console.error('Profile update error:', err)
       setProfileSaveStatus('error')
       setProfileSaveMessage('프로필 업데이트에 실패했습니다.')
+      toast.error('프로필 업데이트에 실패했습니다.')
     }
   }
 
@@ -179,6 +182,7 @@ export default function SettingsPage() {
       setConfirmPassword('')
       setPasswordSaveStatus('success')
       setPasswordSaveMessage('비밀번호가 변경되었습니다.')
+      toast.success('비밀번호가 변경되었습니다.')
       setTimeout(() => setPasswordSaveStatus('idle'), 3000)
     } catch {
       setPasswordError('예상치 못한 오류가 발생했습니다.')

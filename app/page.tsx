@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { PromptCard } from '@/components/features/prompt/PromptCard'
 import { StarRating } from '@/components/features/review/StarRating'
 import { CATEGORIES, TIERS, ROUTES } from '@/utils/constants'
@@ -218,58 +219,82 @@ export default function Home() {
 
       <div className="container mx-auto px-4">
         {/* Trending Prompts */}
-        {trendingPrompts.length > 0 && (
-          <section className="py-12 md:py-16">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
-                  <Flame className="h-4 w-4 text-orange-500" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">인기 프롬프트</h2>
-                  <p className="text-xs text-gray-500">가장 많이 판매된 프롬프트</p>
-                </div>
+        <section className="py-12 md:py-16">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100">
+                <Flame className="h-4 w-4 text-orange-500" />
               </div>
-              <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-primary">
-                <Link href={`${ROUTES.PROMPTS}?sort=popular`}>
-                  전체보기 <ChevronRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
+              <div>
+                <h2 className="text-xl font-bold">인기 프롬프트</h2>
+                <p className="text-xs text-gray-500">가장 많이 판매된 프롬프트</p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {trendingPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
-              ))}
-            </div>
-          </section>
-        )}
+            <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-primary">
+              <Link href={`${ROUTES.PROMPTS}?sort=popular`}>
+                전체보기 <ChevronRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-4 space-y-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="flex justify-between pt-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-12" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              : trendingPrompts.map((prompt) => (
+                  <PromptCard key={prompt.id} prompt={prompt} />
+                ))}
+          </div>
+        </section>
 
         {/* Latest Prompts */}
-        {latestPrompts.length > 0 && (
-          <section className="py-12 md:py-16 border-t">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
-                  <Clock className="h-4 w-4 text-blue-500" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">최신 프롬프트</h2>
-                  <p className="text-xs text-gray-500">방금 등록된 따끈따끈한 프롬프트</p>
-                </div>
+        <section className="py-12 md:py-16 border-t">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100">
+                <Clock className="h-4 w-4 text-blue-500" />
               </div>
-              <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-primary">
-                <Link href={`${ROUTES.PROMPTS}?sort=latest`}>
-                  전체보기 <ChevronRight className="ml-1 h-4 w-4" />
-                </Link>
-              </Button>
+              <div>
+                <h2 className="text-xl font-bold">최신 프롬프트</h2>
+                <p className="text-xs text-gray-500">방금 등록된 따끈따끈한 프롬프트</p>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {latestPrompts.map((prompt) => (
-                <PromptCard key={prompt.id} prompt={prompt} />
-              ))}
-            </div>
-          </section>
-        )}
+            <Button variant="ghost" size="sm" asChild className="text-gray-500 hover:text-primary">
+              <Link href={`${ROUTES.PROMPTS}?sort=latest`}>
+                전체보기 <ChevronRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i}>
+                    <CardContent className="p-4 space-y-3">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                      <div className="flex justify-between pt-2">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-4 w-12" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              : latestPrompts.map((prompt) => (
+                  <PromptCard key={prompt.id} prompt={prompt} />
+                ))}
+          </div>
+        </section>
 
         {/* Category Showcase */}
         <section className="py-12 md:py-16 border-t">

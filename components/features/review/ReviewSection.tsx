@@ -22,6 +22,7 @@ import { formatRelativeTime } from '@/utils/format'
 import { validateReviewRating, validateReviewComment } from '@/utils/validation'
 import { useAuthStore } from '@/store/auth'
 import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
 import type { ReviewWithUser } from '@/types/database'
 
 interface ReviewSectionProps {
@@ -187,9 +188,11 @@ export function ReviewSection({
       setNewRating(0)
       setNewComment('')
       setPage(0)
+      toast.success('리뷰가 등록되었습니다.')
       await Promise.all([fetchReviews(0), fetchStats(), findMyReview()])
     } catch {
       setSubmitError('예상치 못한 오류가 발생했습니다.')
+      toast.error('리뷰 등록에 실패했습니다.')
     } finally {
       setIsSubmitting(false)
     }
@@ -228,14 +231,16 @@ export function ReviewSection({
 
       if (error) {
         console.error('Update review error:', error)
+        toast.error('리뷰 수정에 실패했습니다.')
         return
       }
 
       setEditingReviewId(null)
       setPage(0)
+      toast.success('리뷰가 수정되었습니다.')
       await Promise.all([fetchReviews(0), fetchStats(), findMyReview()])
     } catch {
-      console.error('Unexpected error updating review')
+      toast.error('리뷰 수정 중 오류가 발생했습니다.')
     } finally {
       setIsSubmitting(false)
     }
@@ -254,15 +259,17 @@ export function ReviewSection({
 
       if (error) {
         console.error('Delete review error:', error)
+        toast.error('리뷰 삭제에 실패했습니다.')
         return
       }
 
       setMyReview(null)
       setDeletingReviewId(null)
       setPage(0)
+      toast.success('리뷰가 삭제되었습니다.')
       await Promise.all([fetchReviews(0), fetchStats()])
     } catch {
-      console.error('Unexpected error deleting review')
+      toast.error('리뷰 삭제 중 오류가 발생했습니다.')
     } finally {
       setDeletingReviewId(null)
     }

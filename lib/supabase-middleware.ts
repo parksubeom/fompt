@@ -44,18 +44,37 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // 보호된 라우트 접근 제어 (예: /profile, /prompts/create)
-  const protectedRoutes = ['/profile', '/prompts/create', '/purchases', '/settings']
+  const protectedRoutes = ['/profile', '/prompts/create', '/purchases', '/settings', '/bookmarks', '/points']
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
   )
 
   if (isProtectedRoute && !user) {
-    // 로그인 안 된 상태로 보호된 라우트 접근 시 로그인 페이지로 리다이렉트
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = '/login'
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
+  }
+
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
+  if (isAdminRoute) {
+    if (!user) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/login'
+      return NextResponse.redirect(redirectUrl)
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single() as { data: { is_admin: boolean } | null }
+
+    if (!userData?.is_admin) {
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = '/'
+      return NextResponse.redirect(redirectUrl)
+    }
   }
 
   return supabaseResponse

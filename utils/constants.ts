@@ -178,4 +178,7 @@ export const ROUTES = {
   POINTS: '/points',
   BOOKMARKS: '/bookmarks',
   SETTINGS: '/settings',
+  ADMIN: '/admin',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_PROMPTS: '/admin/prompts',
 } as const

@@ -65,12 +65,13 @@ export interface User {
   email: string
   nickname: string
   avatar_url: string | null
-  points: number // 현재 보유 포인트
-  referral_code: string // 고유 추천인 코드
-  referred_by: string | null // 추천인 코드 (nullable)
-  tier: UserTier // 등급: BRONZE, SILVER, GOLD, PLATINUM
-  total_sales: number // 총 판매 횟수
-  total_purchases: number // 총 구매 횟수
+  points: number
+  referral_code: string
+  referred_by: string | null
+  tier: UserTier
+  total_sales: number
+  total_purchases: number
+  is_admin: boolean
   created_at: string
   updated_at: string
 }
@@ -80,12 +81,13 @@ export interface UserInsert {
   email: string
   nickname: string
   avatar_url?: string | null
-  points?: number // 기본값: 100
+  points?: number
   referral_code: string
   referred_by?: string | null
-  tier?: UserTier // 기본값: BRONZE
-  total_sales?: number // 기본값: 0
-  total_purchases?: number // 기본값: 0
+  tier?: UserTier
+  total_sales?: number
+  total_purchases?: number
+  is_admin?: boolean
   created_at?: string
   updated_at?: string
 }
@@ -98,6 +100,7 @@ export interface UserUpdate {
   tier?: UserTier
   total_sales?: number
   total_purchases?: number
+  is_admin?: boolean
   updated_at?: string
 }
 

@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogIn, User, Settings, LogOut, ShoppingBag, Plus, Wallet, Bookmark, Bell } from 'lucide-react'
+import { LogIn, User, Settings, LogOut, ShoppingBag, Plus, Wallet, Bookmark, Bell, Shield, Home, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -199,6 +199,21 @@ export function Header({ user }: HeaderProps) {
                     </Link>
                   </DropdownMenuItem>
 
+                  {user.is_admin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href={ROUTES.ADMIN}
+                          className="flex items-center cursor-pointer text-red-600"
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>관리자 패널</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+
                   <DropdownMenuSeparator />
 
                   <DropdownMenuItem
@@ -230,39 +245,79 @@ export function Header({ user }: HeaderProps) {
         </div>
       </div>
 
-      {/* 모바일 네비게이션 (sm 이하) */}
-      {user && (
-        <div className="md:hidden border-t bg-white">
-          <div className="container mx-auto flex items-center justify-around px-4 py-2">
-            <Link
-              href={ROUTES.PROMPTS}
-              className={`flex flex-col items-center text-xs ${
-                pathname === ROUTES.PROMPTS ? 'text-primary' : 'text-gray-600'
-              }`}
-            >
-              <ShoppingBag className="h-5 w-5 mb-1" />
-              <span>둘러보기</span>
-            </Link>
-            <Link
-              href={ROUTES.PROMPT_CREATE}
-              className={`flex flex-col items-center text-xs ${
-                pathname === ROUTES.PROMPT_CREATE
-                  ? 'text-primary'
-                  : 'text-gray-600'
-              }`}
-            >
-              <Plus className="h-5 w-5 mb-1" />
-              <span>판매하기</span>
-            </Link>
-            <div className="flex flex-col items-center text-xs text-primary">
-              <div className="h-5 w-5 mb-1 flex items-center justify-center text-base">
-                💰
-              </div>
-              <span>{formatPoints(user.points)}</span>
-            </div>
-          </div>
+      {/* 모바일 하단 네비게이션 */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t bg-white/95 backdrop-blur-sm safe-area-bottom">
+        <div className="flex items-center justify-around px-2 py-1.5">
+          <Link
+            href={ROUTES.HOME}
+            className={`flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+              pathname === '/' ? 'text-primary' : 'text-gray-400'
+            }`}
+          >
+            <Home className="h-5 w-5 mb-0.5" />
+            <span>홈</span>
+          </Link>
+          <Link
+            href={ROUTES.PROMPTS}
+            className={`flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+              pathname === ROUTES.PROMPTS ? 'text-primary' : 'text-gray-400'
+            }`}
+          >
+            <Search className="h-5 w-5 mb-0.5" />
+            <span>둘러보기</span>
+          </Link>
+          {user ? (
+            <>
+              <Link
+                href={ROUTES.PROMPT_CREATE}
+                className="flex flex-col items-center py-1 px-2"
+              >
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#06B6D4] flex items-center justify-center -mt-3 shadow-lg">
+                  <Plus className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-[10px] font-medium text-gray-400 mt-0.5">등록</span>
+              </Link>
+              <Link
+                href={ROUTES.BOOKMARKS}
+                className={`flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+                  pathname === ROUTES.BOOKMARKS ? 'text-primary' : 'text-gray-400'
+                }`}
+              >
+                <Bookmark className="h-5 w-5 mb-0.5" />
+                <span>즐겨찾기</span>
+              </Link>
+              <Link
+                href={ROUTES.PROFILE}
+                className={`flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+                  pathname === ROUTES.PROFILE ? 'text-primary' : 'text-gray-400'
+                }`}
+              >
+                <User className="h-5 w-5 mb-0.5" />
+                <span>프로필</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                href={ROUTES.LOGIN}
+                className={`flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium transition-colors ${
+                  pathname === ROUTES.LOGIN ? 'text-primary' : 'text-gray-400'
+                }`}
+              >
+                <LogIn className="h-5 w-5 mb-0.5" />
+                <span>로그인</span>
+              </Link>
+              <Link
+                href={ROUTES.SIGNUP}
+                className="flex flex-col items-center py-1 px-2 rounded-lg text-[10px] font-medium text-gray-400"
+              >
+                <User className="h-5 w-5 mb-0.5" />
+                <span>시작하기</span>
+              </Link>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </header>
   )
 }
