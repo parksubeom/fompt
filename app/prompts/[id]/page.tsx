@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { StarRating } from '@/components/features/review/StarRating'
+import { ReviewSection } from '@/components/features/review/ReviewSection'
 import { CATEGORIES, TIERS, ROUTES } from '@/utils/constants'
 import {
   formatPoints,
@@ -292,6 +294,16 @@ export default function PromptDetailPage() {
               ))}
             </div>
           )}
+
+          {/* 리뷰 섹션 */}
+          <div className="pt-4 border-t">
+            <ReviewSection
+              promptId={prompt.id}
+              sellerId={prompt.seller_id}
+              isPurchased={isPurchased}
+              isOwner={isOwner}
+            />
+          </div>
         </div>
 
         {/* 사이드바 (우측 1/3) */}
@@ -451,6 +463,14 @@ export default function PromptDetailPage() {
               <h3 className="text-sm font-semibold text-gray-500 mb-1">
                 통계
               </h3>
+              {prompt.rating_avg > 0 && (
+                <div className="flex items-center justify-center gap-2 p-2 rounded-lg bg-amber-50">
+                  <StarRating rating={prompt.rating_avg} size="sm" />
+                  <span className="text-sm font-semibold text-amber-700">
+                    {prompt.rating_avg.toFixed(1)}
+                  </span>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="text-center p-2 rounded-lg bg-gray-50">
                   <Eye className="h-4 w-4 text-gray-400 mx-auto mb-1" />

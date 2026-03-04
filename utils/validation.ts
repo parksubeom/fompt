@@ -201,6 +201,32 @@ export function validatePromptPreview(preview: string): ValidationResult {
 }
 
 /**
+ * 리뷰 평점 검증
+ */
+export function validateReviewRating(rating: number): ValidationResult {
+  if (!rating || rating < 1 || rating > 5) {
+    return { isValid: false, error: '1~5 사이의 평점을 선택해주세요.' }
+  }
+  if (!Number.isInteger(rating)) {
+    return { isValid: false, error: '평점은 정수만 가능합니다.' }
+  }
+  return { isValid: true }
+}
+
+/**
+ * 리뷰 코멘트 검증
+ */
+export function validateReviewComment(comment: string): ValidationResult {
+  if (comment.length > VALIDATION.REVIEW.COMMENT.MAX) {
+    return {
+      isValid: false,
+      error: `리뷰는 최대 ${VALIDATION.REVIEW.COMMENT.MAX}자까지 가능합니다.`,
+    }
+  }
+  return { isValid: true }
+}
+
+/**
  * 프롬프트 폼 전체 검증
  */
 export function validatePromptForm(data: {

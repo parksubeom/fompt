@@ -24,6 +24,12 @@ export interface Database {
         Update: PurchaseUpdate
         Relationships: []
       }
+      reviews: {
+        Row: Review
+        Insert: ReviewInsert
+        Update: ReviewUpdate
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -175,6 +181,36 @@ export interface PurchaseUpdate {
 }
 
 // ============================================
+// Reviews Table
+// ============================================
+
+export interface Review {
+  id: string
+  reviewer_id: string
+  prompt_id: string
+  rating: number
+  comment: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ReviewInsert {
+  id?: string
+  reviewer_id: string
+  prompt_id: string
+  rating: number
+  comment?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ReviewUpdate {
+  rating?: number
+  comment?: string
+  updated_at?: string
+}
+
+// ============================================
 // Helper Types
 // ============================================
 
@@ -202,5 +238,17 @@ export interface PurchaseWithDetails extends Purchase {
   seller: {
     id: string
     nickname: string
+  }
+}
+
+/**
+ * Review with Reviewer Info (JOIN 결과)
+ */
+export interface ReviewWithUser extends Review {
+  reviewer: {
+    id: string
+    nickname: string
+    avatar_url: string | null
+    tier: UserTier
   }
 }

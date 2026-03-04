@@ -18,11 +18,12 @@ import { CATEGORIES } from '@/utils/constants'
 import { supabase } from '@/lib/supabase'
 import type { PromptCategory, PromptWithSeller } from '@/types/database'
 
-type SortOption = 'latest' | 'popular' | 'price_asc' | 'price_desc'
+type SortOption = 'latest' | 'popular' | 'rating' | 'price_asc' | 'price_desc'
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'latest', label: '최신순' },
   { value: 'popular', label: '인기순' },
+  { value: 'rating', label: '평점순' },
   { value: 'price_asc', label: '가격 낮은순' },
   { value: 'price_desc', label: '가격 높은순' },
 ]
@@ -110,6 +111,9 @@ function PromptsContent() {
             break
           case 'popular':
             query = query.order('purchase_count', { ascending: false })
+            break
+          case 'rating':
+            query = query.order('rating_avg', { ascending: false })
             break
           case 'price_asc':
             query = query.order('price', { ascending: true })

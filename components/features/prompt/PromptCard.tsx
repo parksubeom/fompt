@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, ShoppingCart } from 'lucide-react'
+import { Eye, ShoppingCart, Star } from 'lucide-react'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -91,6 +91,12 @@ export function PromptCard({ prompt, onTagClick }: PromptCardProps) {
           </div>
 
           <div className="flex items-center gap-3 text-xs text-gray-400">
+            {prompt.rating_avg > 0 && (
+              <span className="flex items-center gap-0.5 text-amber-500">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                {prompt.rating_avg.toFixed(1)}
+              </span>
+            )}
             <span className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
               {formatCompactNumber(prompt.view_count)}

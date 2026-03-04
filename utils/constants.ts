@@ -150,6 +150,10 @@ export const VALIDATION = {
     CONTENT: { MIN: 20, MAX: 5000 },
     PREVIEW: { MIN: 10, MAX: 200 },
   },
+  REVIEW: {
+    COMMENT: { MIN: 0, MAX: 500 },
+    RATING: { MIN: 1, MAX: 5 },
+  },
   REFERRAL_CODE: {
     LENGTH: 8,
     PATTERN: /^[A-Z0-9]{8}$/, // 8자리 대문자+숫자
