@@ -14,6 +14,7 @@ import {
   AlertCircle,
   Pencil,
   Trash2,
+  Bookmark,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -47,6 +48,8 @@ export default function PromptDetailPage() {
   const [purchaseError, setPurchaseError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
+  const [bookmarkLoading, setBookmarkLoading] = useState(false)
 
   const isOwner = user?.id === prompt?.seller_id
 
@@ -93,11 +96,22 @@ export default function PromptDetailPage() {
     incrementViewCount()
   }, [fetchPrompt, incrementViewCount])
 
+  const checkBookmark = useCallback(async () => {
+    if (!user) return
+    const { data } = await (supabase.from('bookmarks') as any)
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('prompt_id', promptId)
+      .maybeSingle()
+    setIsBookmarked(!!data)
+  }, [user, promptId])
+
   useEffect(() => {
     if (prompt && user) {
       checkPurchase()
+      checkBookmark()
     }
-  }, [prompt, user, checkPurchase])
+  }, [prompt, user, checkPurchase, checkBookmark])
 
   const handlePurchase = async () => {
     if (!user || !prompt) return
@@ -157,6 +171,28 @@ export default function PromptDetailPage() {
       console.error('Unexpected delete error')
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const handleToggleBookmark = async () => {
+    if (!user || !prompt) return
+    setBookmarkLoading(true)
+    try {
+      if (isBookmarked) {
+        await (supabase.from('bookmarks') as any)
+          .delete()
+          .eq('user_id', user.id)
+          .eq('prompt_id', prompt.id)
+        setIsBookmarked(false)
+      } else {
+        await (supabase.from('bookmarks') as any)
+          .insert({ user_id: user.id, prompt_id: prompt.id })
+        setIsBookmarked(true)
+      }
+    } catch {
+      console.error('Bookmark toggle failed')
+    } finally {
+      setBookmarkLoading(false)
     }
   }
 
@@ -248,7 +284,24 @@ export default function PromptDetailPage() {
                 </Badge>
               )}
             </div>
-            <h1 className="text-2xl font-bold mb-2">{prompt.title}</h1>
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="text-2xl font-bold mb-2">{prompt.title}</h1>
+              {user && !isOwner && (
+                <button
+                  onClick={handleToggleBookmark}
+                  disabled={bookmarkLoading}
+                  className="flex-shrink-0 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <Bookmark
+                    className={`h-5 w-5 transition-colors ${
+                      isBookmarked
+                        ? 'fill-violet-500 text-violet-500'
+                        : 'text-gray-400 hover:text-gray-600'
+                    }`}
+                  />
+                </button>
+              )}
+            </div>
             <p className="text-gray-600">{prompt.description}</p>
           </div>
 

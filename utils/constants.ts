@@ -176,5 +176,6 @@ export const ROUTES = {
   PROMPT_CREATE: '/prompts/create',
   PURCHASES: '/purchases',
   POINTS: '/points',
+  BOOKMARKS: '/bookmarks',
   SETTINGS: '/settings',
 } as const

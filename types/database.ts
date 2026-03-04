@@ -36,6 +36,18 @@ export interface Database {
         Update: never
         Relationships: []
       }
+      bookmarks: {
+        Row: Bookmark
+        Insert: BookmarkInsert
+        Update: never
+        Relationships: []
+      }
+      notifications: {
+        Row: Notification
+        Insert: NotificationInsert
+        Update: { is_read?: boolean }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -240,6 +252,52 @@ export interface PointTransactionInsert {
   amount: number
   balance_after: number
   description?: string
+  related_id?: string | null
+  created_at?: string
+}
+
+// ============================================
+// Bookmarks Table
+// ============================================
+
+export interface Bookmark {
+  id: string
+  user_id: string
+  prompt_id: string
+  created_at: string
+}
+
+export interface BookmarkInsert {
+  id?: string
+  user_id: string
+  prompt_id: string
+  created_at?: string
+}
+
+// ============================================
+// Notifications Table
+// ============================================
+
+export type NotificationType = 'PURCHASE_RECEIVED' | 'REVIEW_RECEIVED' | 'WELCOME' | 'SYSTEM'
+
+export interface Notification {
+  id: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message: string
+  is_read: boolean
+  related_id: string | null
+  created_at: string
+}
+
+export interface NotificationInsert {
+  id?: string
+  user_id: string
+  type: NotificationType
+  title: string
+  message?: string
+  is_read?: boolean
   related_id?: string | null
   created_at?: string
 }

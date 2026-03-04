@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogIn, User, Settings, LogOut, ShoppingBag, Plus, Wallet } from 'lucide-react'
+import { LogIn, User, Settings, LogOut, ShoppingBag, Plus, Wallet, Bookmark, Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -22,6 +22,7 @@ import {
 import { ROUTES } from '@/utils/constants'
 import { formatPoints } from '@/utils/format'
 import { TIERS } from '@/utils/constants'
+import { NotificationBell } from '@/components/features/notification/NotificationBell'
 import type { User as UserType } from '@/types/database'
 import { supabase } from '@/lib/supabase'
 
@@ -79,6 +80,9 @@ export function Header({ user }: HeaderProps) {
         <div className="flex items-center space-x-4">
           {user ? (
             <>
+              {/* 알림 벨 */}
+              <NotificationBell userId={user.id} />
+
               {/* 포인트 뱃지 */}
               <Link href={ROUTES.POINTS}>
                 <Badge
@@ -162,6 +166,16 @@ export function Header({ user }: HeaderProps) {
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       <span>프롬프트 등록</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={ROUTES.BOOKMARKS}
+                      className="flex items-center cursor-pointer"
+                    >
+                      <Bookmark className="mr-2 h-4 w-4" />
+                      <span>즐겨찾기</span>
                     </Link>
                   </DropdownMenuItem>
 
