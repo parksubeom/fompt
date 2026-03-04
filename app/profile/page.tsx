@@ -125,9 +125,18 @@ function ProfileContent() {
                 </Badge>
               </div>
 
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-gray-500 mb-4">
+              <div className="flex items-center justify-center sm:justify-start gap-2 text-sm text-gray-500 mb-2">
                 <Mail className="h-4 w-4" />
                 <span>{user.email}</span>
+              </div>
+
+              <div className="flex justify-center sm:justify-start mb-4">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={ROUTES.SETTINGS}>
+                    <Settings className="mr-1.5 h-3.5 w-3.5" />
+                    프로필 편집
+                  </Link>
+                </Button>
               </div>
 
               {/* 통계 */}

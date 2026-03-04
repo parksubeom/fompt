@@ -30,6 +30,12 @@ export interface Database {
         Update: ReviewUpdate
         Relationships: []
       }
+      point_transactions: {
+        Row: PointTransactionRecord
+        Insert: PointTransactionInsert
+        Update: never
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -208,6 +214,34 @@ export interface ReviewUpdate {
   rating?: number
   comment?: string
   updated_at?: string
+}
+
+// ============================================
+// Point Transactions Table
+// ============================================
+
+export type PointTransactionType = 'SIGNUP' | 'PURCHASE' | 'SALE' | 'REFERRAL'
+
+export interface PointTransactionRecord {
+  id: string
+  user_id: string
+  type: PointTransactionType
+  amount: number
+  balance_after: number
+  description: string
+  related_id: string | null
+  created_at: string
+}
+
+export interface PointTransactionInsert {
+  id?: string
+  user_id: string
+  type: PointTransactionType
+  amount: number
+  balance_after: number
+  description?: string
+  related_id?: string | null
+  created_at?: string
 }
 
 // ============================================

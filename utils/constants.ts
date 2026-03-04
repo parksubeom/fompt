@@ -175,5 +175,6 @@ export const ROUTES = {
   PROMPT_EDIT: (id: string) => `/prompts/${id}/edit`,
   PROMPT_CREATE: '/prompts/create',
   PURCHASES: '/purchases',
+  POINTS: '/points',
   SETTINGS: '/settings',
 } as const

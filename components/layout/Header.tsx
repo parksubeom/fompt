@@ -7,7 +7,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogIn, User, Settings, LogOut, ShoppingBag, Plus } from 'lucide-react'
+import { LogIn, User, Settings, LogOut, ShoppingBag, Plus, Wallet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -80,14 +80,16 @@ export function Header({ user }: HeaderProps) {
           {user ? (
             <>
               {/* 포인트 뱃지 */}
-              <Badge
-                variant="secondary"
-                className="hidden sm:flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-violet-50 to-cyan-50 text-primary border-primary/20"
-              >
-                <span className="text-base font-bold">
-                  {formatPoints(user.points)}
-                </span>
-              </Badge>
+              <Link href={ROUTES.POINTS}>
+                <Badge
+                  variant="secondary"
+                  className="hidden sm:flex items-center space-x-1 px-3 py-1 bg-gradient-to-r from-violet-50 to-cyan-50 text-primary border-primary/20 cursor-pointer hover:shadow-sm transition-shadow"
+                >
+                  <span className="text-base font-bold">
+                    {formatPoints(user.points)}
+                  </span>
+                </Badge>
+              </Link>
 
               {/* 프로필 드롭다운 */}
               <DropdownMenu>
@@ -160,6 +162,16 @@ export function Header({ user }: HeaderProps) {
                     >
                       <Plus className="mr-2 h-4 w-4" />
                       <span>프롬프트 등록</span>
+                    </Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={ROUTES.POINTS}
+                      className="flex items-center cursor-pointer"
+                    >
+                      <Wallet className="mr-2 h-4 w-4" />
+                      <span>포인트 내역</span>
                     </Link>
                   </DropdownMenuItem>
 
